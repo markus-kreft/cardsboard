@@ -43,6 +43,8 @@ class TUI:
             curses.KEY_ENTER: self.open_item,
             10: self.open_item,
             13: self.open_item,
+            ord("g"): self.focus_top,
+            ord("G"): self.focus_bottom,
             ord("o"): self.insert_item_below,
             ord("d"): self.delete,
             ord("i"): self.rename_item,
@@ -237,6 +239,12 @@ class TUI:
         self.focused_row = min(
             max(0, len(self.data[self.focused_col]["items"]) - 1), self.focused_row + 1
         )
+
+    def focus_top(self):
+        self.focused_row = 0
+
+    def focus_bottom(self):
+        self.focused_row = max(0, len(self.data[self.focused_col]["items"]) - 1)
 
     def move_down(self):
         if self.focused_row < len(self.data[self.focused_col]["items"]) - 1:

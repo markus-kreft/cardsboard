@@ -28,6 +28,8 @@ Only the indicator of content in cards is kept, which allows to discern simple t
 | arrow right         | focus right           |
 | arrow up            | focus up              |
 | arrow down          | focus down            |
+| g                   | focus top item        |
+| G                   | focus bottom item     |
 | Shift + arrow left  | move item left        |
 | Shift + arrow right | move item right       |
 | Shift + arrow up    | move item up          |
