@@ -51,8 +51,8 @@ class fsDB:
 
     def get_path(self, col, row=None):
         """
-        Get the file system path for a folder (given column only)
-        or a file (given column and row).
+        Get the file system path for a folder (given column only) or a file
+        (given column and row).
         """
         if row is None:
             file = ""
@@ -82,7 +82,7 @@ class fsDB:
     def insert_item_below(self, col, row, title):
         dirname = self.get_path(col)
 
-        if len(self.data[col]["items"]) > 0:  # There is at least one item
+        if len(self.data[col]["items"]) > 0:  # now there is at least one item
             new_row = row + 1
         else:
             new_row = 0
@@ -105,7 +105,7 @@ class fsDB:
             new_row,
             {
                 "title": title,
-                "has_content": False,  # has to be empty becuase newly created
+                "has_content": False,  # has to be empty because newly created
                 "tag": None,
             },
         )
@@ -126,7 +126,7 @@ class fsDB:
         os.rename(path_old, path_new)
 
     def insert_column_right(self, col, title):
-        if len(self.data) > 0:  # There is at least one column
+        if len(self.data) > 0:  # now there is at least one column
             new_col = col + 1
         else:
             new_col = 0

@@ -21,42 +21,43 @@ COLORS = {
 class TUI:
     def __init__(self):
         """
-        Initialze database and focus
+        Initialize database and focus.
         """
         self.db = fsDB(config.DATADIR)
         self.focused_col = 0
         self.focused_row = 0
 
         self.keymap = {
-            ord("q"): self.quit,
-            27: self.handle_exc,
-            ord("r"): self.reload_data,
-            curses.KEY_RESIZE: self.handle_resize,
-            curses.KEY_LEFT: self.focus_left,
-            curses.KEY_RIGHT: self.focus_right,
-            curses.KEY_UP: self.focus_up,
-            curses.KEY_DOWN: self.focus_down,
-            curses.KEY_SF: self.move_down,
-            curses.KEY_SR: self.move_up,
-            curses.KEY_SLEFT: self.move_left,
-            curses.KEY_SRIGHT: self.move_right,
-            curses.KEY_ENTER: self.open_item,
             10: self.open_item,
             13: self.open_item,
-            ord("g"): self.focus_top,
+            27: self.handle_exc,
+            curses.KEY_DOWN: self.focus_down,
+            curses.KEY_ENTER: self.open_item,
+            curses.KEY_LEFT: self.focus_left,
+            curses.KEY_RESIZE: self.handle_resize,
+            curses.KEY_RIGHT: self.focus_right,
+            curses.KEY_SF: self.move_down,
+            curses.KEY_SLEFT: self.move_left,
+            curses.KEY_SR: self.move_up,
+            curses.KEY_SRIGHT: self.move_right,
+            curses.KEY_UP: self.focus_up,
             ord("G"): self.focus_bottom,
-            ord("o"): self.insert_item_below,
-            ord("d"): self.delete,
-            ord("i"): self.rename_item,
             ord("c"): self.insert_column_right,
+            ord("d"): self.delete,
+            ord("g"): self.focus_top,
             ord("h"): self.move_column_left,
+            ord("i"): self.rename_item,
             ord("l"): self.move_column_right,
+            ord("o"): self.insert_item_below,
+            ord("q"): self.quit,
+            ord("r"): self.reload_data,
         }
 
     def border(self, window):
         """
-        Helper function to make border edges rounded because curses can not do
-        this natively: https://stackoverflow.com/questions/60350904/use-utf-8-character-for-curses-border
+        Helper function to make border edges rounded.
+        Curses can not do this natively:
+        https://stackoverflow.com/questions/60350904/use-utf-8-character-for-curses-border
         """
         window.border()
         lines, cols = window.getmaxyx()
@@ -71,15 +72,30 @@ class TUI:
 
     def refresh_pad(self):
         """
-        Refresh the pad based on current size of stdscr and position of focused item
+        Refresh the pad based on current size of stdscr and position of focused item.
         """
         scroll_col = (self.focused_col + 1) * (config.COLUMN_WIDTH + 1) - 1 - self.cols
         scroll_row = (self.focused_row + 1) * config.ITEM_HEIGHT + 4 - self.rows
         self.pad.refresh(scroll_row, scroll_col, 0, 0, self.rows - 1, self.cols - 1)
 
+    def draw_item(self, item, file, col, row):
+        text_width = config.ITEM_WIDTH - 3
+        position_icon = config.ITEM_WIDTH - 3
+
+        if file["has_content"]:
+            item.addstr(1, position_icon, '☰')
+            position_icon -= 2
+            text_width -= 3
+
+        if file['tag'] is not None:
+            item.addstr(1, position_icon, '⬤', self.COLOR_TAGGED)
+            text_width -= 2
+
+        item.addstr(1, 2, file["title"][: text_width])
+
     def draw_board(self):
         """
-        Fully redraw all columns and items on the pad
+        Fully redraw all columns and items on the pad.
         """
         lines, _ = self.pad.getmaxyx()
 
@@ -95,7 +111,7 @@ class TUI:
                 text,
                 curses.A_BOLD | (self.COLOR_FOCUSED if self.focused_col == i else 0),
             )
-            # Draw a separation below the title
+            # draw a separation below the title
             column.hline(2, 1, curses.ACS_HLINE, config.COLUMN_WIDTH - 1)
             column.addch(2, 0, curses.ACS_LTEE)
             column.addch(2, config.COLUMN_WIDTH - 1, curses.ACS_RTEE)
@@ -111,15 +127,7 @@ class TUI:
                 )
                 self.border(item)
 
-                if file["has_content"]:
-                    text = file["title"][: config.ITEM_WIDTH - 6]
-                    text = f"{text:<{config.ITEM_WIDTH - 5}}☰"
-                else:
-                    text = file["title"][: config.ITEM_WIDTH - 3]
-
-                item.addstr(
-                    1, 2, text, self.COLOR_TAGGED if file["tag"] is not None else 0
-                )
+                self.draw_item(item, file, i, j)
 
                 if i == self.focused_col and j == self.focused_row:
                     item.bkgd(" ", self.COLOR_FOCUSED)
@@ -138,7 +146,7 @@ class TUI:
 
     def main(self, stdscr):
         """
-        Initizlize curses setup and start the UI
+        Initialize curses setup and start the UI.
         """
         curses.set_escdelay(1)
         curses.curs_set(0)
@@ -168,7 +176,7 @@ class TUI:
         self.data = self.db.parse()
 
         while True:
-            # set up the pad - this needs to be re-sized accoeding to new content
+            # set up the pad - this needs to be re-sized according to new content
             try:
                 highest_number_of_items = max([len(c["items"]) for c in self.data])
             except ValueError:
@@ -196,7 +204,7 @@ class TUI:
 
     def handle_exc(self):
         """
-        Handle <esc> vs key combinations with <alt>
+        Handle <esc> vs key combinations with <alt>.
         """
         self.stdscr.nodelay(True)
         key2 = self.stdscr.getch()
@@ -220,14 +228,14 @@ class TUI:
 
     def focus_left(self):
         self.focused_col = max(0, self.focused_col - 1)
-        # If the column we jump to has less items then the one we are coming from
+        # if the column we jump to has less items then the one we are coming from
         self.focused_row = min(
             self.focused_row, max(0, len(self.data[self.focused_col]["items"]) - 1)
         )
 
     def focus_right(self):
         self.focused_col = min(max(0, len(self.data) - 1), self.focused_col + 1)
-        # If the column we jump to has less items then the one we are coming from
+        # if the column we jump to has less items then the one we are coming from
         self.focused_row = min(
             self.focused_row, max(0, len(self.data[self.focused_col]["items"]) - 1)
         )
@@ -277,16 +285,19 @@ class TUI:
             self.focused_row = len(self.data[self.focused_col]["items"]) - 1
 
     def open_item(self):
-        if len(self.data[self.focused_col]["items"]) > 0:
-            file = self.db.get_path(self.focused_col, self.focused_row)
-            # If running in tmux, prefer tmux command
-            if "TMUX" in os.environ and config.CMD_TMUX is not None:
-                os.system(config.CMD_TMUX.format(file))
-            # Else, if configured use the normal command
-            elif config.CMD is not None:
-                os.system(config.CMD.format(file))
-            # repoarse because new content might have been added
-            self.data = self.db.parse()
+        if len(self.data) == 0:
+            return
+        if len(self.data[self.focused_col]["items"]) == 0:
+            return
+        file = self.db.get_path(self.focused_col, self.focused_row)
+        # if running in tmux, prefer tmux command
+        if "TMUX" in os.environ and config.CMD_TMUX is not None:
+            os.system(config.CMD_TMUX.format(file))
+        # ilse, if configured use the normal command
+        elif config.CMD is not None:
+            os.system(config.CMD.format(file))
+        # reparse because new content might have been added
+        self.data = self.db.parse()
 
     def insert_item_below(self):
         """
@@ -295,10 +306,10 @@ class TUI:
         """
         # TODO dont do this in a popup but in a new item in the column
         text = self._centered_popup()
-        # Don't create empty items
+        # don't create empty items
         if text == "":
             return
-        # Save item
+        # save item
         self.db.insert_item_below(self.focused_col, self.focused_row, text)
         if len(self.data[self.focused_col]["items"]) > 1:
             self.focused_row += 1
@@ -375,7 +386,7 @@ class TUI:
         # Don't create empty items
         if text == "":
             return
-        # Save item
+        # save item
         self.db.insert_column_right(self.focused_col, text)
         self.focused_row = 0
         if len(self.data) > 1:

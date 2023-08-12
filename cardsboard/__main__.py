@@ -8,7 +8,7 @@ from cardsboard.cardsboard import TUI
 
 def main():
     """
-    Main script entrypoint.
+    Main script entry point.
     """
     parser = argparse.ArgumentParser(
         description="Terminal Kanban board for cards-based project management."

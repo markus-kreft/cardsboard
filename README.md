@@ -5,8 +5,8 @@ Terminal Kanban board for cards-based project management.
 ![Screen recording of cardsboard demo.](docs/cardsboard.gif)
 
 
-Cardsboard is actually more of a file explorer.
-Items are simply stored as files directly on the file system.
+Under the hood Cardsboard functions as a file explorer.
+Items are stored as simple files directly on the file system.
 This means they can be easily edited by opening them in your preferred text editor.
 Furthermore, this allows for easy synchronization and integration with scripting and automation.
 
@@ -15,7 +15,10 @@ Only the indicator of content in cards is kept, which allows to discern simple t
 
 ## Installation
 
-`pip install .`
+```sh
+git clone https://github.com/markus-kreft/cardsboard
+pip install .
+```
 
 ## Usage
 
