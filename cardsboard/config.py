@@ -26,7 +26,7 @@ CONF = configparser.ConfigParser()
 # If non config file exists, make one with the default parameters
 if not exists(CONF_FILE):
     try:
-        os.mkdir(os.path.dirname(CONF_FILE))
+        os.makedirs(os.path.dirname(CONF_FILE), exist_ok=True)
     except OSError:
         pass
     with open(CONF_FILE, "w", encoding=locale.getpreferredencoding()) as conf_file:
