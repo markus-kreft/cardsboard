@@ -2,7 +2,7 @@
 
 Terminal Kanban board for cards-based project management.
 
-![Screen recording of cardsboard demo.](docs/cardsboard.gif)
+![Screen recording of cardsboard demo.](https://raw.githubusercontent.com/markus-kreft/cardsboard/2a50efe3d3bf59e7a04cb6e95b5548c55f007a58/docs/cardsboard.gif)
 
 
 Under the hood Cardsboard functions as a file explorer.
