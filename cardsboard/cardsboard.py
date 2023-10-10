@@ -305,6 +305,9 @@ class TUI:
         The title can be input in a popup.
         """
         # TODO dont do this in a popup but in a new item in the column
+        # don't create items if no column exists
+        if len(self.data) == 0:
+            return
         text = self._centered_popup()
         # don't create empty items
         if text == "":
