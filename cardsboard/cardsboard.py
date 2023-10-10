@@ -30,7 +30,7 @@ class TUI:
         self.keymap = {
             10: self.open_item,
             13: self.open_item,
-            27: self.handle_exc,
+            # 27: self.handle_esc,
             curses.KEY_DOWN: self.focus_down,
             curses.KEY_ENTER: self.open_item,
             curses.KEY_LEFT: self.focus_left,
@@ -202,7 +202,7 @@ class TUI:
     def quit(self):
         return False
 
-    def handle_exc(self):
+    def handle_esc(self):
         """
         Handle <esc> vs key combinations with <alt>.
         """

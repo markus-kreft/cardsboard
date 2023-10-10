@@ -26,7 +26,7 @@ pip install .
 
 | Key                 | Description           |
 |---------------------|-----------------------|
-| q, esc, ctrl + c    | quit                  |
+| q, ctrl + c         | quit                  |
 | arrow left          | focus left            |
 | arrow right         | focus right           |
 | arrow up            | focus up              |
