@@ -16,8 +16,7 @@ Only the indicator of content in cards is kept, which allows to discern simple t
 ## Installation
 
 ```sh
-git clone https://github.com/markus-kreft/cardsboard
-pip install .
+pip install cardsboard
 ```
 
 ## Usage
