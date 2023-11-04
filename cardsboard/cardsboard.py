@@ -318,6 +318,8 @@ class TUI:
             self.focused_row += 1
 
     def rename_item(self):
+        if len(self.data) == 0 or len(self.data[self.focused_col]) == 0:
+            return
         item = self.data[self.focused_col]["items"][self.focused_row]
         item["item"].erase()
         self.refresh_pad()
