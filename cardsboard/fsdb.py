@@ -119,10 +119,16 @@ class fsDB:
         self.data[col]["items"].pop(row)
         self._excert(this_path_old)
 
-    def rename(self, col, row, new_name):
+    def rename_item(self, col, row, new_name):
         path_old = self.get_path(col, row)
         self.data[col]["items"][row]["title"] = new_name
         path_new = self.get_path(col, row)
+        os.rename(path_old, path_new)
+
+    def rename_column(self, col, new_name):
+        path_old = self.get_path(col)
+        self.data[col]["title"] = new_name
+        path_new = self.get_path(col)
         os.rename(path_old, path_new)
 
     def insert_column_right(self, col, title):

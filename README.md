@@ -42,6 +42,7 @@ pip install cardsboard
 | i                   | rename focused item   |
 | dd                  | delete focused item   |
 | c                   | insert column right   |
+| I                   | rename focused column |
 | h                   | move column left      |
 | l                   | move column right     |
 | dc                  | delete column         |

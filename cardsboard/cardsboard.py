@@ -47,6 +47,7 @@ class TUI:
             ord("g"): self.focus_top,
             ord("h"): self.move_column_left,
             ord("i"): self.rename_item,
+            ord("I"): self.rename_column,
             ord("l"): self.move_column_right,
             ord("o"): self.insert_item_below,
             ord("q"): self.quit,
@@ -318,7 +319,7 @@ class TUI:
             self.focused_row += 1
 
     def rename_item(self):
-        if len(self.data) == 0 or len(self.data[self.focused_col]) == 0:
+        if len(self.data) == 0 or len(self.data[self.focused_col]["items"]) == 0:
             return
         item = self.data[self.focused_col]["items"][self.focused_row]
         item["item"].erase()
@@ -347,7 +348,44 @@ class TUI:
         new_name = textbox.edit().strip()
         curses.curs_set(0)
 
-        self.db.rename(self.focused_col, self.focused_row, new_name)
+        self.db.rename_item(self.focused_col, self.focused_row, new_name)
+
+    def rename_column(self):
+        if len(self.data) == 0:
+            return
+
+        column = self.data[self.focused_col]
+
+        popup = self.stdscr.derwin(
+            config.ITEM_HEIGHT,
+            config.COLUMN_WIDTH,
+            0,
+            min(
+                (config.COLUMN_WIDTH + 1) * self.focused_col,
+                # If the pad is alrger than the screen we are always at the right edge
+                self.cols - config.COLUMN_WIDTH,
+            ),
+        )
+        popup.erase()
+        self.border(popup)
+        popup.addch(2, 0, curses.ACS_LTEE)
+        try:
+            popup.addch(2, config.COLUMN_WIDTH - 1, curses.ACS_RTEE)
+        except _curses.error:
+            pass
+        popup.bkgd(" ", self.COLOR_FOCUSED)
+
+        textwin = popup.derwin(1, config.ITEM_WIDTH - 3, 1, 2)
+        text = column["title"][: config.ITEM_WIDTH - 3]
+        textwin.addstr(0, 0, text)
+
+        textbox = curses.textpad.Textbox(textwin, insert_mode=True)
+        popup.refresh()
+        curses.curs_set(1)
+        new_name = textbox.edit().strip()
+        curses.curs_set(0)
+
+        self.db.rename_column(self.focused_col, new_name)
 
     def delete(self):
         key2 = self.stdscr.getch()
