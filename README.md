@@ -32,6 +32,8 @@ pip install cardsboard
 | arrow down          | focus down            |
 | g                   | focus top item        |
 | G                   | focus bottom item     |
+| home                | focus first column    |
+| end                 | focus last column     |
 | Shift + arrow left  | move item left        |
 | Shift + arrow right | move item right       |
 | Shift + arrow up    | move item up          |

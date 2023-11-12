@@ -41,6 +41,8 @@ class TUI:
             curses.KEY_SR: self.move_up,
             curses.KEY_SRIGHT: self.move_right,
             curses.KEY_UP: self.focus_up,
+            curses.KEY_HOME: self.focus_first,
+            curses.KEY_END: self.focus_last,
             ord("G"): self.focus_bottom,
             ord("c"): self.insert_column_right,
             ord("d"): self.delete,
@@ -254,6 +256,20 @@ class TUI:
 
     def focus_bottom(self):
         self.focused_row = max(0, len(self.data[self.focused_col]["items"]) - 1)
+
+    def focus_first(self):
+        self.focused_col = 0
+        # if the column we jump to has less items then the one we are coming from
+        self.focused_row = min(
+            self.focused_row, max(0, len(self.data[self.focused_col]["items"]) - 1)
+        )
+
+    def focus_last(self):
+        self.focused_col = max(0, len(self.data) - 1)
+        # if the column we jump to has less items then the one we are coming from
+        self.focused_row = min(
+            self.focused_row, max(0, len(self.data[self.focused_col]["items"]) - 1)
+        )
 
     def move_down(self):
         if self.focused_row < len(self.data[self.focused_col]["items"]) - 1:
