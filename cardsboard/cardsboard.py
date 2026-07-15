@@ -86,7 +86,7 @@ class TUI:
         position_icon = config.ITEM_WIDTH - 3
 
         if file["has_content"]:
-            item.addstr(1, position_icon, '☰')
+            item.addstr(1, position_icon, '≡')
             position_icon -= 2
             text_width -= 3
 
@@ -199,8 +199,8 @@ class TUI:
 
     def handle_keypress(self):
         key = self.stdscr.getch()
-        if key in self.keymap.keys():
-            return self.keymap[key]()
+        if (action := self.keymap.get(key)) is not None:
+            return action()
 
     def quit(self):
         return False
@@ -333,6 +333,7 @@ class TUI:
         self.db.insert_item_below(self.focused_col, self.focused_row, text)
         if len(self.data[self.focused_col]["items"]) > 1:
             self.focused_row += 1
+        self.stdscr.refresh()
 
     def rename_item(self):
         if len(self.data) == 0 or len(self.data[self.focused_col]["items"]) == 0:
