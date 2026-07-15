@@ -51,19 +51,35 @@ pip install cardsboard
 
 ## Configuration
 
-If non-existent, Cardsboard creates a default configuration at `~/.config/keepmenu/config.ini`.
+If non-existent, Cardsboard creates a default configuration at `~/.config/cardsboard/config.ini`.
 To be able to open and edit items you additionally need to set `cmd` to a program that can open Markdown files.
 Use the placeholder `{}` for the absolute path to the file.
 
 For example, to open files in vim in a new Alacritty terminal window you can use:
 ```ini
-cmd = alacritty --title cardsboard-popup -e bash -c 'vim "{}"' > /dev/null`
+cmd = alacritty --title cardsboard-popup -e bash -c 'vim "{}"' > /dev/null
 ```
-Additional options like `--tilte` can tell the window manager to treat the window in a special way, e.g., as a pop-up window.
+Additional options like `--title` can tell the window manager to treat the window in a special way, e.g., as a pop-up window.
 
 Furthermore, Cardsboard automatically detects when it is running inside Tmux and you can configure a special command for that case, e.g. use:
 ```ini
 cmd_tmux = tmux popup -E vim "{}"
+```
+
+## Development
+
+Cardsboard is developed with [uv](https://docs.astral.sh/uv/). Run the working tree directly with:
+
+```sh
+uv run cardsboard
+```
+
+Linting and type checking:
+
+```sh
+uv run ruff check
+uv run ruff format --check
+uv run ty check
 ```
 
 ## Similar Projects

@@ -1,4 +1,5 @@
 import os
+import subprocess
 import curses
 import _curses
 import curses.textpad
@@ -86,15 +87,15 @@ class TUI:
         position_icon = config.ITEM_WIDTH - 3
 
         if file["has_content"]:
-            item.addstr(1, position_icon, '≡')
+            item.addstr(1, position_icon, "≡")
             position_icon -= 2
             text_width -= 3
 
-        if file['tag'] is not None:
-            item.addstr(1, position_icon, '⬤', self.COLOR_TAGGED)
+        if file["tag"] is not None:
+            item.addstr(1, position_icon, "⬤", self.COLOR_TAGGED)
             text_width -= 2
 
-        item.addstr(1, 2, file["title"][: text_width])
+        item.addstr(1, 2, file["title"][:text_width])
 
     def draw_board(self):
         """
@@ -309,10 +310,10 @@ class TUI:
         file = self.db.get_path(self.focused_col, self.focused_row)
         # if running in tmux, prefer tmux command
         if "TMUX" in os.environ and config.CMD_TMUX is not None:
-            os.system(config.CMD_TMUX.format(file))
+            subprocess.run(config.CMD_TMUX.format(file), shell=True)
         # ilse, if configured use the normal command
         elif config.CMD is not None:
-            os.system(config.CMD.format(file))
+            subprocess.run(config.CMD.format(file), shell=True)
         # reparse because new content might have been added
         self.data = self.db.parse()
 

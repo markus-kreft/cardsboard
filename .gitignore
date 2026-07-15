@@ -1,2 +1,12 @@
-__pychache__/
+# Python
+__pycache__/
 *.py[cod]
+
+# Build output (uv build)
+dist/
+
+# uv
+.venv/
+
+# Local card data
+data/
