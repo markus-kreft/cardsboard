@@ -250,9 +250,10 @@ class TUI:
                 break
 
     def handle_keypress(self):
-        key = self.stdscr.getch()
-        if (action := self.keymap.get(key)) is not None:
-            return action()
+        # wait for a mapped key, so the board is only redrawn after an action
+        while (action := self.keymap.get(self.stdscr.getch())) is None:
+            pass
+        return action()
 
     def quit(self):
         return False
