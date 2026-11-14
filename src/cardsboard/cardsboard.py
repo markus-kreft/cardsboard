@@ -1,4 +1,5 @@
 import os
+import shlex
 import subprocess
 import curses
 import _curses
@@ -361,12 +362,23 @@ class TUI:
         if len(self.data[self.focused_col]["items"]) == 0:
             return
         file = self.db.get_path(self.focused_col, self.focused_row)
-        # if running in tmux, prefer tmux command
-        if "TMUX" in os.environ and config.CMD_TMUX is not None:
-            subprocess.run(config.CMD_TMUX.format(file), shell=True)
-        # ilse, if configured use the normal command
-        elif config.CMD is not None:
+        # if configured use the custom command, e.g. a popup
+        if config.CMD is not None:
             subprocess.run(config.CMD.format(file), shell=True)
+        # else, hand the terminal over to the editor until it is closed
+        else:
+            editor = os.environ.get("VISUAL") or os.environ.get("EDITOR") or "vi"
+            curses.endwin()
+            try:
+                subprocess.run([*shlex.split(editor), file])
+            except FileNotFoundError:
+                # the terminal is in normal mode here, so just print the error
+                print(f'cardsboard: editor "{editor}" not found.')
+                print("Set $VISUAL or $EDITOR, or `cmd` in the config.")
+                print("Press enter to return.")
+                input()
+            # force a full repaint, the main loop resumes curses and redraws the board
+            self.stdscr.clear()
         # reparse because new content might have been added
         self.data = self.db.parse()
 
