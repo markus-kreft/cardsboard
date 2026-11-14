@@ -193,6 +193,8 @@ class TUI:
             )
             # self.pad.erase()
             self.draw_board()
+            # deleted popups touch stdscr, sync it now so getch() doesn't repaint it
+            self.stdscr.noutrefresh()
             self.refresh_pad()
 
             if self.handle_keypress() is False:
