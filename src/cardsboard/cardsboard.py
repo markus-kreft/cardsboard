@@ -19,6 +19,20 @@ COLORS = {
 }
 
 
+class Textbox(curses.textpad.Textbox):
+    """
+    Textbox that can be aborted with <esc>.
+    """
+
+    aborted = False
+
+    def do_command(self, ch):
+        if ch == 27:
+            self.aborted = True
+            return 0
+        return super().do_command(ch)
+
+
 class TUI:
     def __init__(self):
         """
@@ -362,12 +376,14 @@ class TUI:
         text = item["title"][: config.ITEM_WIDTH - 3]
         textwin.addstr(0, 0, text)
 
-        textbox = curses.textpad.Textbox(textwin, insert_mode=True)
+        textbox = Textbox(textwin, insert_mode=True)
         popup.refresh()
         curses.curs_set(1)
         new_name = textbox.edit().strip()
         curses.curs_set(0)
 
+        if textbox.aborted:
+            return
         self.db.rename_item(self.focused_col, self.focused_row, new_name)
 
     def rename_column(self):
@@ -399,12 +415,14 @@ class TUI:
         text = column["title"][: config.ITEM_WIDTH - 3]
         textwin.addstr(0, 0, text)
 
-        textbox = curses.textpad.Textbox(textwin, insert_mode=True)
+        textbox = Textbox(textwin, insert_mode=True)
         popup.refresh()
         curses.curs_set(1)
         new_name = textbox.edit().strip()
         curses.curs_set(0)
 
+        if textbox.aborted:
+            return
         self.db.rename_column(self.focused_col, new_name)
 
     def delete(self):
@@ -476,7 +494,7 @@ class TUI:
         self.border(popup)
         popup.bkgd(" ", self.COLOR_FOCUSED)
         textwin = popup.derwin(1, config.ITEM_WIDTH - 3, 1, 2)
-        textbox = curses.textpad.Textbox(textwin, insert_mode=True)
+        textbox = Textbox(textwin, insert_mode=True)
         popup.refresh()
         # https://stackoverflow.com/questions/36121802/python-curses-make-enter-key-terminate-textbox
         curses.curs_set(1)
@@ -485,4 +503,7 @@ class TUI:
         curses.curs_set(0)
         popup.erase()
         popup.refresh()
+        # callers don't create anything for an empty text
+        if textbox.aborted:
+            return ""
         return text
