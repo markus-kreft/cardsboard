@@ -99,7 +99,7 @@ class TUI:
         scroll_row = (self.focused_row + 1) * config.ITEM_HEIGHT + 4 - self.rows
         self.pad.refresh(scroll_row, scroll_col, 0, 0, self.rows - 1, self.cols - 1)
 
-    def draw_item(self, item, file, col, row):
+    def draw_item(self, item, file):
         text_width = config.ITEM_WIDTH - 3
         position_icon = config.ITEM_WIDTH - 3
 
@@ -148,7 +148,7 @@ class TUI:
                 )
                 self.border(item)
 
-                self.draw_item(item, file, i, j)
+                self.draw_item(item, file)
 
                 if i == self.focused_col and j == self.focused_row:
                     item.bkgd(" ", self.COLOR_FOCUSED)
