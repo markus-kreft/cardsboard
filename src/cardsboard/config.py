@@ -20,7 +20,8 @@ COLOR_TAGGED_BG = "black"
 
 
 CONF_FILE = expanduser("~/.config/cardsboard/config.ini")
-CONF = configparser.ConfigParser()
+# no interpolation, so a literal % can be used, e.g. in cmd
+CONF = configparser.ConfigParser(interpolation=None)
 
 
 # If non config file exists, make one with the default parameters
