@@ -21,7 +21,7 @@ COLORS = {
 
 class Textbox(curses.textpad.Textbox):
     """
-    Textbox that can be aborted with <esc>.
+    Textbox that can be aborted with <esc> and can't be submitted empty.
     """
 
     aborted = False
@@ -30,6 +30,9 @@ class Textbox(curses.textpad.Textbox):
         if ch == 27:
             self.aborted = True
             return 0
+        # ignore <enter> on empty text, the user has to abort with <esc>
+        if ch in (10, 13) and self.gather().strip() == "":
+            return 1
         return super().do_command(ch)
 
 
