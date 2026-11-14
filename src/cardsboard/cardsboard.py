@@ -216,7 +216,6 @@ class TUI:
             self.pad = curses.newpad(
                 column_height, max(1, len(self.data)) * (config.COLUMN_WIDTH + 1)
             )
-            # self.pad.erase()
             self.draw_board()
             # deleted popups touch stdscr, sync it now so getch() doesn't repaint it
             self.stdscr.noutrefresh()
@@ -232,17 +231,6 @@ class TUI:
 
     def quit(self):
         return False
-
-    def handle_esc(self):
-        """
-        Handle <esc> vs key combinations with <alt>.
-        """
-        self.stdscr.nodelay(True)
-        key2 = self.stdscr.getch()
-        if key2 == -1:
-            self.stdscr.nodelay(False)
-            return False
-        self.stdscr.nodelay(False)
 
     def handle_resize(self):
         """
@@ -399,7 +387,6 @@ class TUI:
         self.db.insert_item_below(self.focused_col, self.focused_row, text)
         if len(self.data[self.focused_col]["items"]) > 1:
             self.focused_row += 1
-        self.stdscr.refresh()
 
     def rename_item(self):
         if len(self.data) == 0 or len(self.data[self.focused_col]["items"]) == 0:
