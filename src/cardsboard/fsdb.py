@@ -14,21 +14,19 @@ class fsDB:
         # titles are used as file names, which can't contain "/"
         return title.replace("/", "|")
 
-    def _is_board_entry(self, name, is_dir):
-        # skip other files, e.g. editor swap files, they would break the parsing
-        prefix, sep, _ = name.partition("_")
-        return prefix.isdecimal() and sep != "" and (is_dir or name.endswith(".md"))
+    def _is_board_entry(self, entry, dirs):
+        # only columns (dirs) or items (.md files), skip e.g. editor swap files
+        prefix, sep, _ = entry.name.partition("_")
+        if not (prefix.isdecimal() and sep):
+            return False
+        return (
+            entry.is_dir() if dirs else entry.is_file() and entry.name.endswith(".md")
+        )
 
     def _sorted_in_dir(self, dirname, reverse=False, dirs=False):
-        # get only files or dirs
-        dir_or_file = lambda f: f.is_dir() if dirs else f.is_file()
-        get_key = lambda path: int(get_basename(path).split("_", 1)[0])
-        list_to_sort = (
-            abspath(f.path)
-            for f in os.scandir(dirname)
-            if dir_or_file(f) and self._is_board_entry(f.name, dirs)
-        )
-        return sorted(list_to_sort, key=get_key, reverse=reverse)
+        entries = [e for e in os.scandir(dirname) if self._is_board_entry(e, dirs)]
+        entries.sort(key=lambda e: int(e.name.split("_", 1)[0]), reverse=reverse)
+        return [abspath(e.path) for e in entries]
 
     def parse(self):
         data = []
