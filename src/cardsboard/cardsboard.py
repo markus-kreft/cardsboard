@@ -147,6 +147,9 @@ class TUI:
         Fully redraw all columns and items on the pad.
         """
         lines, _ = self.pad.getmaxyx()
+        # windows by position, used to draw over a column or item in place
+        self.column_windows = []
+        self.item_windows = []
 
         for i, folder in enumerate(self.data):
             column = self.pad.derwin(
@@ -164,8 +167,8 @@ class TUI:
             column.hline(2, 1, curses.ACS_HLINE, config.COLUMN_WIDTH - 1)
             column.addch(2, 0, curses.ACS_LTEE)
             column.addch(2, config.COLUMN_WIDTH - 1, curses.ACS_RTEE)
-            # save column
-            self.data[i]["column"] = column
+            self.column_windows.append(column)
+            self.item_windows.append([])
 
             for j, file in enumerate(folder["items"]):
                 item = column.derwin(
@@ -181,8 +184,7 @@ class TUI:
                 if i == self.focused_col and j == self.focused_row:
                     item.bkgd(" ", self.COLOR_FOCUSED)
 
-                # Save item
-                self.data[i]["items"][j]["item"] = item
+                self.item_windows[i].append(item)
 
     def run(self):
         """
@@ -400,7 +402,7 @@ class TUI:
         item = self.focused_item
         if item is None:
             return
-        item["item"].erase()
+        self.item_windows[self.focused_col][self.focused_row].erase()
         self.refresh_pad()
 
         popup = self.stdscr.derwin(
@@ -478,7 +480,7 @@ class TUI:
     def delete_item(self):
         if self.focused_item is None:
             return
-        item = self.focused_item["item"]
+        item = self.item_windows[self.focused_col][self.focused_row]
         item.erase()
         self.border(item)
         item.addstr(1, 2, "Delete? [Ny]")
@@ -493,7 +495,7 @@ class TUI:
     def delete_column(self):
         if self.focused_column is None:
             return
-        column = self.focused_column["column"]
+        column = self.column_windows[self.focused_col]
         column.addstr(
             1, 2, "Delete? [Ny]".center(config.COLUMN_WIDTH - 4), self.COLOR_DELETE
         )
