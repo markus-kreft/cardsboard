@@ -26,6 +26,7 @@ pip install cardsboard
 | Key                 | Description           |
 |---------------------|-----------------------|
 | q, ctrl + c         | quit                  |
+| ?                   | show shortcuts        |
 | arrow left          | focus left            |
 | arrow right         | focus right           |
 | arrow up            | focus up              |
@@ -48,6 +49,7 @@ pip install cardsboard
 | h                   | move column left      |
 | l                   | move column right     |
 | dc                  | delete column         |
+| esc                 | abort input           |
 
 ## Configuration
 

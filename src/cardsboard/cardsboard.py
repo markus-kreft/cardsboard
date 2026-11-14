@@ -45,33 +45,40 @@ class TUI:
         self.focused_col = 0
         self.focused_row = 0
 
+        # (keys, label, description, action), also used for the shortcuts screen
+        # fmt: off
+        self.shortcuts = [
+            ([ord("q")], "q, ctrl + c", "quit", self.quit),
+            ([ord("?")], "?", "show shortcuts", self.show_shortcuts),
+            ([curses.KEY_LEFT], "arrow left", "focus left", self.focus_left),
+            ([curses.KEY_RIGHT], "arrow right", "focus right", self.focus_right),
+            ([curses.KEY_UP], "arrow up", "focus up", self.focus_up),
+            ([curses.KEY_DOWN], "arrow down", "focus down", self.focus_down),
+            ([ord("g")], "g", "focus top item", self.focus_top),
+            ([ord("G")], "G", "focus bottom item", self.focus_bottom),
+            ([curses.KEY_HOME], "home", "focus first column", self.focus_first),
+            ([curses.KEY_END], "end", "focus last column", self.focus_last),
+            ([curses.KEY_SLEFT], "shift + arrow left", "move item left", self.move_left),
+            ([curses.KEY_SRIGHT], "shift + arrow right", "move item right", self.move_right),
+            ([curses.KEY_SR], "shift + arrow up", "move item up", self.move_up),
+            ([curses.KEY_SF], "shift + arrow down", "move item down", self.move_down),
+            ([10, 13, curses.KEY_ENTER], "enter", "open focused item", self.open_item),
+            ([ord("r")], "r", "reload data from disk", self.reload_data),
+            ([ord("o")], "o", "insert item below", self.insert_item_below),
+            ([ord("i")], "i", "rename focused item", self.rename_item),
+            ([ord("d")], "dd", "delete focused item", self.delete),
+            ([ord("c")], "c", "insert column right", self.insert_column_right),
+            ([ord("I")], "I", "rename focused column", self.rename_column),
+            ([ord("h")], "h", "move column left", self.move_column_left),
+            ([ord("l")], "l", "move column right", self.move_column_right),
+            # handled in delete() and Textbox, only listed for the shortcuts screen
+            ([], "dc", "delete column", None),
+            ([], "esc", "abort input", None),
+        ]
+        # fmt: on
         self.keymap = {
-            10: self.open_item,
-            13: self.open_item,
-            # 27: self.handle_esc,
-            curses.KEY_DOWN: self.focus_down,
-            curses.KEY_ENTER: self.open_item,
-            curses.KEY_LEFT: self.focus_left,
             curses.KEY_RESIZE: self.handle_resize,
-            curses.KEY_RIGHT: self.focus_right,
-            curses.KEY_SF: self.move_down,
-            curses.KEY_SLEFT: self.move_left,
-            curses.KEY_SR: self.move_up,
-            curses.KEY_SRIGHT: self.move_right,
-            curses.KEY_UP: self.focus_up,
-            curses.KEY_HOME: self.focus_first,
-            curses.KEY_END: self.focus_last,
-            ord("G"): self.focus_bottom,
-            ord("c"): self.insert_column_right,
-            ord("d"): self.delete,
-            ord("g"): self.focus_top,
-            ord("h"): self.move_column_left,
-            ord("i"): self.rename_item,
-            ord("I"): self.rename_column,
-            ord("l"): self.move_column_right,
-            ord("o"): self.insert_item_below,
-            ord("q"): self.quit,
-            ord("r"): self.reload_data,
+            **{key: action for keys, _, _, action in self.shortcuts for key in keys},
         }
 
     def border(self, window):
@@ -248,6 +255,33 @@ class TUI:
 
     def reload_data(self):
         self.data = self.db.parse()
+
+    def show_shortcuts(self):
+        """
+        Replace the screen with a list of shortcuts until <esc> or ? is pressed.
+        """
+        label_width = max(len(label) for _, label, _, _ in self.shortcuts) + 2
+        while True:
+            self.stdscr.erase()
+            self.border(self.stdscr)
+            title = "Shortcuts"
+            self.stdscr.addstr(
+                1, max(2, self.cols // 2 - len(title) // 2), title, curses.A_BOLD
+            )
+            # only show as many shortcuts as fit on the screen
+            shortcuts = self.shortcuts[: max(0, self.rows - 4)]
+            for i, (_, label, description, _) in enumerate(shortcuts):
+                line = label.ljust(label_width) + description
+                self.stdscr.addstr(3 + i, 2, line[: max(0, self.cols - 4)])
+            self.stdscr.refresh()
+
+            key = self.stdscr.getch()
+            if key in (27, ord("?")):
+                break
+            if key == curses.KEY_RESIZE:
+                self.handle_resize()
+        # clear the screen in case the pad is smaller than the screen
+        self.stdscr.erase()
 
     def focus_left(self):
         self.focused_col = max(0, self.focused_col - 1)
