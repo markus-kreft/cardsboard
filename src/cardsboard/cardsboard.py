@@ -27,6 +27,9 @@ class Textbox(curses.textpad.Textbox):
 
     aborted = False
 
+    def edit(self, validate=None):
+        return super().edit(validate).strip()
+
     def do_command(self, ch):
         if ch == 27:
             self.aborted = True
@@ -425,7 +428,7 @@ class TUI:
         textbox = Textbox(textwin, insert_mode=True)
         popup.refresh()
         curses.curs_set(1)
-        new_name = textbox.edit().strip()
+        new_name = textbox.edit()
         curses.curs_set(0)
 
         if textbox.aborted:
@@ -463,7 +466,7 @@ class TUI:
         textbox = Textbox(textwin, insert_mode=True)
         popup.refresh()
         curses.curs_set(1)
-        new_name = textbox.edit().strip()
+        new_name = textbox.edit()
         curses.curs_set(0)
 
         if textbox.aborted:
@@ -547,8 +550,7 @@ class TUI:
         popup.refresh()
         # https://stackoverflow.com/questions/36121802/python-curses-make-enter-key-terminate-textbox
         curses.curs_set(1)
-        text = textbox.edit().strip()
-        text = text.replace("/", "|")
+        text = textbox.edit()
         curses.curs_set(0)
         popup.erase()
         popup.refresh()

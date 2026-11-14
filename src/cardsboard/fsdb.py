@@ -10,6 +10,10 @@ class fsDB:
     def __init__(self, basedir):
         self.basedir = basedir
 
+    def _valid_title(self, title):
+        # titles are used as file names, which can't contain "/"
+        return title.replace("/", "|")
+
     def _sorted_in_dir(self, dirname, reverse=False, dirs=False):
         # get only files or dirs
         dir_or_file = lambda f: f.is_dir() if dirs else f.is_file()
@@ -80,6 +84,7 @@ class fsDB:
         os.rename(other_path_intermediate, other_path_new)
 
     def insert_item_below(self, col, row, title):
+        title = self._valid_title(title)
         dirname = self.get_path(col)
 
         if len(self.data[col]["items"]) > 0:  # now there is at least one item
@@ -121,17 +126,18 @@ class fsDB:
 
     def rename_item(self, col, row, new_name):
         path_old = self.get_path(col, row)
-        self.data[col]["items"][row]["title"] = new_name
+        self.data[col]["items"][row]["title"] = self._valid_title(new_name)
         path_new = self.get_path(col, row)
         os.rename(path_old, path_new)
 
     def rename_column(self, col, new_name):
         path_old = self.get_path(col)
-        self.data[col]["title"] = new_name
+        self.data[col]["title"] = self._valid_title(new_name)
         path_new = self.get_path(col)
         os.rename(path_old, path_new)
 
     def insert_column_right(self, col, title):
+        title = self._valid_title(title)
         if len(self.data) > 0:  # now there is at least one column
             new_col = col + 1
         else:
