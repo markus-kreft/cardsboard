@@ -4,14 +4,14 @@ Terminal Kanban board for cards-based project management.
 
 ![Screen recording of cardsboard demo.](https://raw.githubusercontent.com/markus-kreft/cardsboard/main/docs/cardsboard.gif)
 
-
 Under the hood Cardsboard functions as a file explorer.
 Items are stored as simple files directly on the file system.
 This means they can be easily edited by opening them in your preferred text editor.
 Furthermore, this allows for easy synchronization and integration with scripting and automation.
 
 The UI is inspired by simplifying the interface of Nextcloud Deck, removing all advanced features (collaboration, comments etc.).
-Only the indicator of content in cards is kept, which allows to discern simple tasks from longer notes.
+Only the indicator of content in cards is kept, which lets you tell simple tasks from longer notes.
+Cards whose first line is `> tags: <tag>` are additionally marked with a dot.
 
 ## Installation
 
@@ -35,10 +35,10 @@ pip install cardsboard
 | G                   | focus bottom item     |
 | home                | focus first column    |
 | end                 | focus last column     |
-| Shift + arrow left  | move item left        |
-| Shift + arrow right | move item right       |
-| Shift + arrow up    | move item up          |
-| Shift + arrow down  | move item down        |
+| shift + arrow left  | move item left        |
+| shift + arrow right | move item right       |
+| shift + arrow up    | move item up          |
+| shift + arrow down  | move item down        |
 | enter               | open focused item     |
 | r                   | reload data from disk |
 | o                   | insert item below     |
