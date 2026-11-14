@@ -82,6 +82,26 @@ class TUI:
             **{key: action for keys, _, _, action in self.shortcuts for key in keys},
         }
 
+    @property
+    def focused_column(self):
+        """
+        The focused column, or None if there are no columns.
+        """
+        return self.data[self.focused_col] if self.data else None
+
+    @property
+    def focused_item(self):
+        """
+        The focused item, or None if the focused column is empty.
+        """
+        items = self.focused_column["items"] if self.data else []
+        return items[self.focused_row] if items else None
+
+    def _clamp_row(self):
+        # if the column we jump to has less items then the one we are coming from
+        items = self.focused_column["items"] if self.data else []
+        self.focused_row = min(self.focused_row, max(0, len(items) - 1))
+
     def border(self, window):
         """
         Helper function to make border edges rounded.
@@ -274,48 +294,38 @@ class TUI:
 
     def focus_left(self):
         self.focused_col = max(0, self.focused_col - 1)
-        # if the column we jump to has less items then the one we are coming from
-        self.focused_row = min(
-            self.focused_row, max(0, len(self.data[self.focused_col]["items"]) - 1)
-        )
+        self._clamp_row()
 
     def focus_right(self):
         self.focused_col = min(max(0, len(self.data) - 1), self.focused_col + 1)
-        # if the column we jump to has less items then the one we are coming from
-        self.focused_row = min(
-            self.focused_row, max(0, len(self.data[self.focused_col]["items"]) - 1)
-        )
+        self._clamp_row()
 
     def focus_up(self):
         self.focused_row = max(0, self.focused_row - 1)
 
     def focus_down(self):
-        self.focused_row = min(
-            max(0, len(self.data[self.focused_col]["items"]) - 1), self.focused_row + 1
-        )
+        self.focused_row += 1
+        self._clamp_row()
 
     def focus_top(self):
         self.focused_row = 0
 
     def focus_bottom(self):
-        self.focused_row = max(0, len(self.data[self.focused_col]["items"]) - 1)
+        if self.focused_column is not None:
+            self.focused_row = max(0, len(self.focused_column["items"]) - 1)
 
     def focus_first(self):
         self.focused_col = 0
-        # if the column we jump to has less items then the one we are coming from
-        self.focused_row = min(
-            self.focused_row, max(0, len(self.data[self.focused_col]["items"]) - 1)
-        )
+        self._clamp_row()
 
     def focus_last(self):
         self.focused_col = max(0, len(self.data) - 1)
-        # if the column we jump to has less items then the one we are coming from
-        self.focused_row = min(
-            self.focused_row, max(0, len(self.data[self.focused_col]["items"]) - 1)
-        )
+        self._clamp_row()
 
     def move_down(self):
-        if self.focused_row < len(self.data[self.focused_col]["items"]) - 1:
+        if self.focused_item is None:
+            return
+        if self.focused_row < len(self.focused_column["items"]) - 1:
             self.db.swap(self.focused_col, self.focused_row, self.focused_row + 1)
             self.focused_row += 1
 
@@ -325,29 +335,27 @@ class TUI:
             self.focused_row -= 1
 
     def move_left(self):
-        if len(self.data[self.focused_col]["items"]) == 0:
+        if self.focused_item is None:
             return
         if self.focused_col > 0:
             self.db.move_to_column(
                 self.focused_col, self.focused_row, self.focused_col - 1
             )
             self.focused_col -= 1
-            self.focused_row = len(self.data[self.focused_col]["items"]) - 1
+            self.focused_row = len(self.focused_column["items"]) - 1
 
     def move_right(self):
-        if len(self.data[self.focused_col]["items"]) == 0:
+        if self.focused_item is None:
             return
         if self.focused_col < len(self.data) - 1:
             self.db.move_to_column(
                 self.focused_col, self.focused_row, self.focused_col + 1
             )
             self.focused_col += 1
-            self.focused_row = len(self.data[self.focused_col]["items"]) - 1
+            self.focused_row = len(self.focused_column["items"]) - 1
 
     def open_item(self):
-        if len(self.data) == 0:
-            return
-        if len(self.data[self.focused_col]["items"]) == 0:
+        if self.focused_item is None:
             return
         file = self.db.get_path(self.focused_col, self.focused_row)
         # if configured use the custom command, e.g. a popup
@@ -377,7 +385,7 @@ class TUI:
         """
         # TODO dont do this in a popup but in a new item in the column
         # don't create items if no column exists
-        if len(self.data) == 0:
+        if self.focused_column is None:
             return
         text = self._centered_popup()
         # don't create empty items
@@ -385,13 +393,13 @@ class TUI:
             return
         # save item
         self.db.insert_item_below(self.focused_col, self.focused_row, text)
-        if len(self.data[self.focused_col]["items"]) > 1:
+        if len(self.focused_column["items"]) > 1:
             self.focused_row += 1
 
     def rename_item(self):
-        if len(self.data) == 0 or len(self.data[self.focused_col]["items"]) == 0:
+        item = self.focused_item
+        if item is None:
             return
-        item = self.data[self.focused_col]["items"][self.focused_row]
         item["item"].erase()
         self.refresh_pad()
 
@@ -423,10 +431,9 @@ class TUI:
         self.db.rename_item(self.focused_col, self.focused_row, new_name)
 
     def rename_column(self):
-        if len(self.data) == 0:
+        column = self.focused_column
+        if column is None:
             return
-
-        column = self.data[self.focused_col]
 
         popup = self.stdscr.derwin(
             config.ITEM_HEIGHT,
@@ -469,7 +476,9 @@ class TUI:
             return self.delete_column()
 
     def delete_item(self):
-        item = self.data[self.focused_col]["items"][self.focused_row]["item"]
+        if self.focused_item is None:
+            return
+        item = self.focused_item["item"]
         item.erase()
         self.border(item)
         item.addstr(1, 2, "Delete? [Ny]")
@@ -482,7 +491,9 @@ class TUI:
             self.focused_row = max(0, self.focused_row - 1)
 
     def delete_column(self):
-        column = self.data[self.focused_col]["column"]
+        if self.focused_column is None:
+            return
+        column = self.focused_column["column"]
         column.addstr(
             1, 2, "Delete? [Ny]".center(config.COLUMN_WIDTH - 4), self.COLOR_DELETE
         )
